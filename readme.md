@@ -8,6 +8,8 @@
 
 A Gradio-based tool for post-processing scanned B&W film negatives. Supports batch processing, automatic tilt/crop detection with manual fine-tuning, one-click full pipeline, and ZIP download. Supports Chinese, English, and Japanese — switch languages in the Settings panel at the bottom of the page.
 
+![dashboard](doc/assets/dashboard.png)
+
 ## 功能 / Features
 
 - **旋转矫正** — 自动检测倾斜角度，支持快捷方向按钮和微调滑块

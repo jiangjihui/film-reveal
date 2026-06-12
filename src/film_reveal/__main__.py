@@ -4,7 +4,8 @@
 使用方式: python -m film_reveal
 """
 
+import gradio as gr
 from film_reveal.app import create_app
 
 demo = create_app()
-demo.launch(server_name="127.0.0.1", server_port=7860)
+demo.launch(server_name="127.0.0.1", server_port=7860, i18n=demo.i18n, theme=gr.themes.Soft())

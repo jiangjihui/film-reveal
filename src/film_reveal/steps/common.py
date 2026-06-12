@@ -2,6 +2,7 @@
 黑白胶卷翻拍后期处理 — 步骤共享辅助函数
 
 统一批处理模式，消除各步骤回调中的重复迭代代码。
+画廊标签只用简单编号（如 "#1"），因为每个画廊区块的标题已是翻译过的。
 """
 
 from film_reveal.state import AppState
@@ -14,7 +15,6 @@ def batch_process(
     process_fn,
     target_list_name: str,
     clear_downstream_from: str,
-    label_prefix: str,
 ) -> tuple[list[Image.Image], list[tuple]]:
     """
     统一的批处理迭代器，消除 4 个步骤回调中的重复代码。
@@ -27,7 +27,6 @@ def batch_process(
         process_fn: 处理单张图片的函数，接收 PIL Image 返回 PIL Image
         target_list_name: 目标图片列表名（如 "rotated_images", "cropped_images"）
         clear_downstream_from: 清空下游缓存的起始步骤名（如 "rotated"）
-        label_prefix: 画廊标签前缀（如 "旋转后", "裁切后"）
 
     Returns:
         tuple: (results 图片列表, gallery_tuples 画廊元组列表)
@@ -41,7 +40,7 @@ def batch_process(
             source_img = state.get_working_image(i)
         result = process_fn(source_img)
         results.append(result)
-        gallery_tuples.append((result, f"{label_prefix} #{i+1}"))
+        gallery_tuples.append((result, "#" + str(i+1)))
 
     setattr(state, target_list_name, results)
     state.clear_downstream(clear_downstream_from)

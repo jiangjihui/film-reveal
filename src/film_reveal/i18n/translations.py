@@ -1,0 +1,250 @@
+"""
+黑白胶卷翻拍后期处理 — 三语翻译字典
+
+格式：{locale: {key: translated_string}}
+locale 需符合 BCP 47 格式 (如 "en", "zh", "ja")。
+"""
+
+TRANSLATIONS = {
+    "zh": {
+        # ── 标题和描述 ──
+        "app_title": "# 🎞️ 黑白胶卷翻拍后期处理工具",
+        "app_description": "> 上传手机翻拍的黑白胶卷负片照片，依次完成 **旋转 → 裁切 → 去色 → 反转** 四个步骤，将负片转为正片。",
+        "blocks_title": "黑白胶卷翻拍后期处理",
+
+        # ── 上传区 ──
+        "upload_section": "### 📤 上传翻拍照片",
+        "upload_label": "选择照片（支持多张）",
+        "original_gallery_label": "原图",
+
+        # ── 旋转步骤 ──
+        "rotate_section": "### 🔄 Step 0: 旋转",
+        "rotate_description": "> 自动检测倾斜角度并矫正。快捷按钮调整大方向，微调滑块纠正细微倾斜。点击原图 Gallery 中的缩略图可切换选中，每张图独立调整。",
+        "auto_tilt_btn": "🔍 自动矫正倾斜",
+        "apply_rotation_btn": "✅ 应用旋转",
+        "rotation_status_label": "旋转状态",
+        "rotation_preview_label": "旋转预览",
+        "quick_direction_label": "**快捷方向按钮**",
+        "rotation_base_display_label": "当前基础方向（°）",
+        "rotation_slider_label": "微调角度（°）",
+        "rotation_slider_info": "在基础方向上微调倾斜，正值逆时针，负值顺时针",
+        "rotated_gallery_label": "旋转结果",
+
+        # ── 裁切步骤 ──
+        "crop_section": "### 🖊️ Step 1: 裁切",
+        "crop_description": "> 自动检测胶卷片基边缘。每张图的裁切偏移量独立调整。",
+        "auto_crop_btn": "🔍 重新自动检测",
+        "apply_crop_btn": "✅ 应用裁切",
+        "crop_status_label": "裁切状态",
+        "crop_preview_label": "裁切预览（红色框 = 裁切边界，半透明区域 = 将被裁掉的部分）",
+        "top_slider_label": "上边距偏移（%）",
+        "bottom_slider_label": "下边距偏移（%）",
+        "left_slider_label": "左边距偏移（%）",
+        "right_slider_label": "右边距偏移（%）",
+        "slider_info": "正值向内收缩，负值向外扩展",
+        "cropped_gallery_label": "裁切结果",
+
+        # ── 去色步骤 ──
+        "desaturate_section": "### 🎨 Step 2: 去色",
+        "desaturate_description": "> 将 RGB 照片转为灰度，去除手机拍照产生的偏色和色温干扰。",
+        "desaturate_btn": "🎨 去色处理",
+        "desaturate_status_label": "去色状态",
+        "desaturate_preview_label": "去色预览",
+        "desaturated_gallery_label": "去色结果",
+
+        # ── 反转步骤 ──
+        "invert_section": "### 🔄 Step 3: 反转",
+        "invert_description": "> 将黑白负片反转为正片，还原真实的明暗关系。",
+        "invert_btn": "🔄 反转处理",
+        "invert_status_label": "反转状态",
+        "invert_preview_label": "反转预览",
+        "inverted_gallery_label": "最终正片",
+
+        # ── 批量操作 ──
+        "batch_section": "### ⚡ 批量操作",
+        "process_all_btn": "⚡ 一键完成全部步骤",
+        "download_btn": "📦 下载全部结果（ZIP）",
+        "download_file_label": "下载 ZIP 文件",
+        "batch_status_label": "批量操作状态",
+
+        # ── 状态消息（简单无参数） ──
+        "msg_upload_first": "请先上传图片",
+        "msg_all_images_failed": "所有图片加载失败，请检查文件",
+        "msg_rotation_complete": "旋转完成！可继续进行裁切处理",
+        "msg_crop_redetected": "裁切边界已重新检测，偏移量已重置",
+        "msg_crop_complete": "裁切完成！可继续进行去色处理",
+        "msg_desaturate_first": "请先完成裁切步骤",
+        "msg_desaturate_complete": "去色完成！可继续进行反转处理",
+        "msg_invert_first": "请先完成去色步骤",
+        "msg_invert_complete": "反转完成！最终正片已生成，可下载结果",
+        "msg_batch_complete": "一键处理完成！所有步骤已自动执行",
+        "msg_no_download": "没有可下载的结果，请先完成处理",
+
+        # ── 状态消息（完整非参数化） ──
+        "msg_tilt_detected": "检测到倾斜角度，已自动填入微调滑块",
+        "msg_rotation_applied": "已旋转，微调滑块已重置为 0°",
+        "msg_uploaded": "图片已上传成功",
+        "msg_downloaded": "正片已打包为 ZIP 文件",
+
+        # ── 画廊标签前缀 ──
+        "gallery_original": "原图",
+        "gallery_rotated": "旋转后",
+        "gallery_cropped": "裁切后",
+        "gallery_desaturated": "去色后",
+        "gallery_positive": "正片",
+    },
+    "en": {
+        "app_title": "# 🎞️ B&W Film Digitization Tool",
+        "app_description": "> Upload phone-captured B&W film negatives and process them through **Rotate → Crop → Desaturate → Invert** to produce positive images.",
+        "blocks_title": "B&W Film Digitization Tool",
+
+        "upload_section": "### 📤 Upload Captured Photos",
+        "upload_label": "Select Photos (Multiple Allowed)",
+        "original_gallery_label": "Original Images",
+
+        "rotate_section": "### 🔄 Step 0: Rotate",
+        "rotate_description": "> Auto-detect and correct tilt angle. Quick buttons adjust the coarse direction, fine-tune slider corrects subtle tilt. Click thumbnails in the Original Gallery to switch selection; each image is adjusted independently.",
+        "auto_tilt_btn": "🔍 Auto-Correct Tilt",
+        "apply_rotation_btn": "✅ Apply Rotation",
+        "rotation_status_label": "Rotation Status",
+        "rotation_preview_label": "Rotation Preview",
+        "quick_direction_label": "**Quick Direction Buttons**",
+        "rotation_base_display_label": "Current Base Direction (°)",
+        "rotation_slider_label": "Fine-Tune Angle (°)",
+        "rotation_slider_info": "Fine-tune tilt relative to base direction; positive = counterclockwise, negative = clockwise",
+        "rotated_gallery_label": "Rotation Results",
+
+        "crop_section": "### 🖊️ Step 1: Crop",
+        "crop_description": "> Auto-detect film base edges. Crop offsets are adjusted independently per image.",
+        "auto_crop_btn": "🔍 Re-detect Automatically",
+        "apply_crop_btn": "✅ Apply Crop",
+        "crop_status_label": "Crop Status",
+        "crop_preview_label": "Crop Preview (red box = crop boundary, semi-transparent = area to remove)",
+        "top_slider_label": "Top Offset (%)",
+        "bottom_slider_label": "Bottom Offset (%)",
+        "left_slider_label": "Left Offset (%)",
+        "right_slider_label": "Right Offset (%)",
+        "slider_info": "Positive shrinks inward, negative expands outward",
+        "cropped_gallery_label": "Crop Results",
+
+        "desaturate_section": "### 🎨 Step 2: Desaturate",
+        "desaturate_description": "> Convert RGB photos to grayscale, removing color cast and temperature interference from phone photography.",
+        "desaturate_btn": "🎨 Desaturate",
+        "desaturate_status_label": "Desaturation Status",
+        "desaturate_preview_label": "Desaturation Preview",
+        "desaturated_gallery_label": "Desaturation Results",
+
+        "invert_section": "### 🔄 Step 3: Invert",
+        "invert_description": "> Invert B&W negatives to positives, restoring the true light/dark relationship.",
+        "invert_btn": "🔄 Invert",
+        "invert_status_label": "Inversion Status",
+        "invert_preview_label": "Inversion Preview",
+        "inverted_gallery_label": "Final Positives",
+
+        "batch_section": "### ⚡ Batch Operations",
+        "process_all_btn": "⚡ Process All Steps",
+        "download_btn": "📦 Download All Results (ZIP)",
+        "download_file_label": "Download ZIP File",
+        "batch_status_label": "Batch Status",
+
+        "msg_upload_first": "Please upload images first",
+        "msg_all_images_failed": "All images failed to load, please check the files",
+        "msg_rotation_complete": "Rotation complete! Proceed to cropping.",
+        "msg_crop_redetected": "Crop boundaries re-detected, offsets reset",
+        "msg_crop_complete": "Crop complete! Proceed to desaturation.",
+        "msg_desaturate_first": "Please complete the crop step first",
+        "msg_desaturate_complete": "Desaturation complete! Proceed to inversion.",
+        "msg_invert_first": "Please complete the desaturate step first",
+        "msg_invert_complete": "Inversion complete! Final positives generated, ready to download.",
+        "msg_batch_complete": "Batch processing complete! All steps executed.",
+        "msg_no_download": "No results to download, please complete processing first",
+
+        "msg_tilt_detected": "Tilt detected, auto-filled in fine-tune slider",
+        "msg_rotation_applied": "Rotated, fine-tune slider reset to 0°",
+        "msg_uploaded": "Images uploaded successfully",
+        "msg_downloaded": "Positives packed into ZIP file",
+
+        "gallery_original": "Original",
+        "gallery_rotated": "Rotated",
+        "gallery_cropped": "Cropped",
+        "gallery_desaturated": "Desaturated",
+        "gallery_positive": "Positive",
+    },
+    "ja": {
+        "app_title": "# 🎞️ 白黒フィルム処理ツール",
+        "app_description": "> スマホで撮影した白黒フィルムネガをアップロードし、**回転 → 刈取 → 色除去 → 反転** の4ステップでポジ画像に変換します。",
+        "blocks_title": "白黒フィルム処理ツール",
+
+        "upload_section": "### 📤 撮影写真をアップロード",
+        "upload_label": "写真を選択（複数可）",
+        "original_gallery_label": "元画像",
+
+        "rotate_section": "### 🔄 Step 0: 回転",
+        "rotate_description": "> 傾き角度を自動検出して修正。クイックボタンで大方向を調整、微調整スライダーで細かい傾きを修正。元画像ギャラリーのサムネイルをクリックして選択を切り替え、各画像を個別に調整。",
+        "auto_tilt_btn": "🔍 傾き自動修正",
+        "apply_rotation_btn": "✅ 回転を適用",
+        "rotation_status_label": "回転状態",
+        "rotation_preview_label": "回転プレビュー",
+        "quick_direction_label": "**クイック方向ボタン**",
+        "rotation_base_display_label": "現在の基準方向（°）",
+        "rotation_slider_label": "微調整角度（°）",
+        "rotation_slider_info": "基準方向に対する微調整。正値=反時計回り、負値=時計回り",
+        "rotated_gallery_label": "回転結果",
+
+        "crop_section": "### 🖊️ Step 1: 刈取",
+        "crop_description": "> フィルムベースの端を自動検出。各画像の刈取オフセットを個別調整。",
+        "auto_crop_btn": "🔍 再自動検出",
+        "apply_crop_btn": "✅ 刈取を適用",
+        "crop_status_label": "刈取状態",
+        "crop_preview_label": "刈取プレビュー（赤枠=刈取境界、半透明=除去部分）",
+        "top_slider_label": "上オフセット（%）",
+        "bottom_slider_label": "下オフセット（%）",
+        "left_slider_label": "左オフセット（%）",
+        "right_slider_label": "右オフセット（%）",
+        "slider_info": "正値=内側に収縮、負値=外側に拡張",
+        "cropped_gallery_label": "刈取結果",
+
+        "desaturate_section": "### 🎨 Step 2: 色除去",
+        "desaturate_description": "> RGB写真をグレースケールに変換、スマホ撮影の偏色と色温度干渉を除去。",
+        "desaturate_btn": "🎨 色除去処理",
+        "desaturate_status_label": "色除去状態",
+        "desaturate_preview_label": "色除去プレビュー",
+        "desaturated_gallery_label": "色除去結果",
+
+        "invert_section": "### 🔄 Step 3: 反転",
+        "invert_description": "> 白黒ネガをポジに反転、真の明暗関係を復元。",
+        "invert_btn": "🔄 反転処理",
+        "invert_status_label": "反転状態",
+        "invert_preview_label": "反転プレビュー",
+        "inverted_gallery_label": "最終ポジ画像",
+
+        "batch_section": "### ⚡ バッチ操作",
+        "process_all_btn": "⚡ 全ステップ一括実行",
+        "download_btn": "📦 全結果ダウンロード（ZIP）",
+        "download_file_label": "ZIPファイルダウンロード",
+        "batch_status_label": "バッチ操作状態",
+
+        "msg_upload_first": "先に画像をアップロードしてください",
+        "msg_all_images_failed": "すべての画像の読み込みに失敗、ファイルを確認してください",
+        "msg_rotation_complete": "回転完了！刈取処理に進んでください",
+        "msg_crop_redetected": "刈取境界を再検出、オフセットをリセット",
+        "msg_crop_complete": "刈取完了！色除去処理に進んでください",
+        "msg_desaturate_first": "先に刈取ステップを完了してください",
+        "msg_desaturate_complete": "色除去完了！反転処理に進んでください",
+        "msg_invert_first": "先に色除去ステップを完了してください",
+        "msg_invert_complete": "反転完了！最終ポジ画像が生成され、ダウンロード可能です",
+        "msg_batch_complete": "バッチ処理完了！全ステップが自動実行されました",
+        "msg_no_download": "ダウンロード結果がありません、先に処理を完了してください",
+
+        "msg_tilt_detected": "傾きを検出、微調整スライダーに自動入力",
+        "msg_rotation_applied": "回転完了、微調整スライダーを0°にリセット",
+        "msg_uploaded": "画像をアップロードしました",
+        "msg_downloaded": "ポジ画像をZIPファイルにパッケージ",
+
+        "gallery_original": "元画像",
+        "gallery_rotated": "回転後",
+        "gallery_cropped": "刈取後",
+        "gallery_desaturated": "色除去後",
+        "gallery_positive": "ポジ",
+    },
+}

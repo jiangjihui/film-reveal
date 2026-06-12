@@ -4,9 +4,9 @@
 > 
 > Upload phone-scanned B&W film negatives, and process them through **Rotate → Crop → Desaturate → Invert** to produce positive images.
 
-一个基于 [Gradio](https://gradio.app/) 的黑白胶卷负片翻拍后期处理工具。支持批量处理多张图片，自动检测倾斜和裁切边界，也可手动微调，一键完成全部步骤并打包下载。
+一个基于 [Gradio](https://gradio.app/) 的黑白胶卷负片翻拍后期处理工具。支持批量处理多张图片，自动检测倾斜和裁切边界，也可手动微调，一键完成全部步骤并打包下载。支持中文、英文、日文三种语言，在页面底部设置面板中切换。
 
-A Gradio-based tool for post-processing scanned B&W film negatives. Supports batch processing, automatic tilt/crop detection with manual fine-tuning, one-click full pipeline, and ZIP download.
+A Gradio-based tool for post-processing scanned B&W film negatives. Supports batch processing, automatic tilt/crop detection with manual fine-tuning, one-click full pipeline, and ZIP download. Supports Chinese, English, and Japanese — switch languages in the Settings panel at the bottom of the page.
 
 ## 功能 / Features
 
@@ -15,6 +15,7 @@ A Gradio-based tool for post-processing scanned B&W film negatives. Supports bat
 - **去色** — 去除 RGB 偏色和色温干扰，转为灰度
 - **反转** — 将负片反转为正片，还原真实明暗关系
 - **批量处理** — 一键完成全部步骤，ZIP 打包下载结果
+- **多语言** — 支持中文、英文、日文，页面底部设置面板切换
 
 ## 项目结构 / Project Structure
 
@@ -22,6 +23,9 @@ A Gradio-based tool for post-processing scanned B&W film negatives. Supports bat
 film-reveal/
 ├── src/film_reveal/                # 源代码包
 │   ├── app.py                      # 主入口 — UI 组装 + 跨步骤回调
+│   ├── i18n/                      # 多语言翻译 (zh/en/ja)
+│   │   ├── __init__.py             # I18n 实例工厂
+│   │   └── translations.py        # 三语翻译字典
 │   ├── state.py                    # 应用状态管理 (AppState + TypedDict)
 │   ├── __main__.py                 # python -m film_reveal 入口
 │   ├── steps/                      # 处理步骤模块

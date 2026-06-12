@@ -2,6 +2,7 @@
 黑白胶卷翻拍后期处理 — 裁切步骤
 
 包含 UI 组件创建、事件绑定和裁切相关回调函数。
+使用 Gradio I18n 实现多语言支持。
 """
 
 import gradio as gr
@@ -13,49 +14,48 @@ from film_reveal.processing.detection import auto_detect_crop_boundaries, detect
 
 # ── UI 创建 ────────────────────────────────────────────────────────────
 
-def create_crop_ui() -> dict:
+def create_crop_ui(i18n) -> dict:
     """创建裁切步骤的 UI 组件，返回组件引用字典。
 
-    必须在 gr.Blocks() 上下文中调用。
+    Args:
+        i18n: Gradio I18n 实例，用于多语言翻译
     """
     components = {}
 
-    gr.Markdown("### 🖊️ Step 1: 裁切")
-    gr.Markdown(
-        "> 自动检测胶卷片基边缘。每张图的裁切偏移量独立调整。"
-    )
+    gr.Markdown(i18n("crop_section"))
+    gr.Markdown(i18n("crop_description"))
 
     with gr.Row():
         with gr.Column(scale=1):
-            components["auto_crop_btn"] = gr.Button("🔍 重新自动检测", variant="secondary")
-            components["apply_crop_btn"] = gr.Button("✅ 应用裁切", variant="primary")
-            components["crop_status"] = gr.Textbox(label="裁切状态", interactive=False)
+            components["auto_crop_btn"] = gr.Button(i18n("auto_crop_btn"), variant="secondary")
+            components["apply_crop_btn"] = gr.Button(i18n("apply_crop_btn"), variant="primary")
+            components["crop_status"] = gr.Textbox(label=i18n("crop_status_label"), interactive=False)
         with gr.Column(scale=2):
             components["crop_preview"] = gr.Image(
-                label="裁切预览（红色框 = 裁切边界，半透明区域 = 将被裁掉的部分）",
+                label=i18n("crop_preview_label"),
                 type="pil",
             )
 
     with gr.Row():
         components["top_slider"] = gr.Slider(
             minimum=-30, maximum=30, value=0, step=1,
-            label="上边距偏移（%）", info="正值向内收缩，负值向外扩展",
+            label=i18n("top_slider_label"), info=i18n("slider_info"),
         )
         components["bottom_slider"] = gr.Slider(
             minimum=-30, maximum=30, value=0, step=1,
-            label="下边距偏移（%）", info="正值向内收缩，负值向外扩展",
+            label=i18n("bottom_slider_label"), info=i18n("slider_info"),
         )
         components["left_slider"] = gr.Slider(
             minimum=-30, maximum=30, value=0, step=1,
-            label="左边距偏移（%）", info="正值向内收缩，负值向外扩展",
+            label=i18n("left_slider_label"), info=i18n("slider_info"),
         )
         components["right_slider"] = gr.Slider(
             minimum=-30, maximum=30, value=0, step=1,
-            label="右边距偏移（%）", info="正值向内收缩，负值向外扩展",
+            label=i18n("right_slider_label"), info=i18n("slider_info"),
         )
 
     components["cropped_gallery"] = gr.Gallery(
-        label="裁切结果", columns=4, height="auto", object_fit="contain",
+        label=i18n("cropped_gallery_label"), columns=4, height="auto", object_fit="contain",
     )
 
     return components
@@ -63,12 +63,13 @@ def create_crop_ui() -> dict:
 
 # ── 事件绑定 ────────────────────────────────────────────────────────────
 
-def bind_crop_events(components: dict, state: AppState):
+def bind_crop_events(components: dict, state: AppState, i18n):
     """绑定裁切步骤的事件回调。
 
     Args:
         components: 裁切步骤的 UI 组件字典
         state: 应用状态实例（通过闭包注入）
+        i18n: Gradio I18n 实例（通过闭包注入）
     """
     top_slider = components["top_slider"]
     bottom_slider = components["bottom_slider"]
@@ -110,7 +111,7 @@ def bind_crop_events(components: dict, state: AppState):
     def on_auto_crop():
         """重新对所有图片执行自动裁切检测，偏移量重置为 0。"""
         if not state.original_images:
-            return None, 0, 0, 0, 0, "请先上传图片"
+            return None, 0, 0, 0, 0, i18n("msg_upload_first")
 
         for i in range(len(state.original_images)):
             working = state.get_working_image(i)
@@ -129,7 +130,7 @@ def bind_crop_events(components: dict, state: AppState):
             params["base_boundaries"],
             params["offsets"],
         )
-        return preview, 0, 0, 0, 0, "裁切边界已重新检测，偏移量已重置"
+        return preview, 0, 0, 0, 0, i18n("msg_crop_redetected")
 
     components["auto_crop_btn"].click(
         fn=on_auto_crop,
@@ -140,7 +141,7 @@ def bind_crop_events(components: dict, state: AppState):
     def on_apply_crop():
         """应用裁切：根据每张图的参数裁切所有图片。"""
         if not state.original_images:
-            return [], None, "请先上传图片"
+            return [], None, i18n("msg_upload_first")
 
         state.cropped_images = []
         cropped_gallery = []
@@ -152,12 +153,12 @@ def bind_crop_events(components: dict, state: AppState):
                 working_img, params["base_boundaries"], params["offsets"]
             )
             state.cropped_images.append(cropped)
-            cropped_gallery.append((cropped, f"裁切后 #{i+1}"))
+            cropped_gallery.append((cropped, "#" + str(i+1)))
 
         state.clear_downstream("cropped")
 
         preview = state.cropped_images[state.selected_index]
-        return cropped_gallery, preview, "裁切完成！可继续进行去色处理"
+        return cropped_gallery, preview, i18n("msg_crop_complete")
 
     components["apply_crop_btn"].click(
         fn=on_apply_crop,

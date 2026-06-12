@@ -2,11 +2,7 @@
 黑白胶卷翻拍后期处理工具 — Gradio UI 主入口
 
 功能：旋转 → 裁切 → 去色 → 反转，支持批量处理多张图片。
-
-此文件负责：
-- 组装各步骤的 UI 和事件绑定
-- 处理跨步骤回调（上传、选中、一键处理、下载）
-- 启动 Gradio 应用
+支持中文、英文、日文三种语言，用户通过页面底部设置面板切换。
 """
 
 import gradio as gr
@@ -16,6 +12,7 @@ import os
 from PIL import Image
 
 from film_reveal.state import AppState
+from film_reveal.i18n import get_i18n
 from film_reveal.processing import (
     auto_detect_crop_boundaries,
     draw_crop_overlay,
@@ -37,47 +34,43 @@ def create_app():
     """创建 Gradio 应用，组装所有步骤和事件。"""
 
     state = AppState()
+    i18n = get_i18n()
 
-    with gr.Blocks(title="黑白胶卷翻拍后期处理", theme=gr.themes.Soft()) as demo:
+    with gr.Blocks(title=i18n("blocks_title")) as demo:
 
         # ── 标题 ──
-        gr.Markdown("# 🎞️ 黑白胶卷翻拍后期处理工具")
-        gr.Markdown(
-            "> 上传手机翻拍的黑白胶卷负片照片，依次完成 **旋转 → 裁切 → 去色 → 反转** 四个步骤，将负片转为正片。"
-        )
+        gr.Markdown(i18n("app_title"))
+        gr.Markdown(i18n("app_description"))
 
         # ── 上传区 ──
-        gr.Markdown("### 📤 上传翻拍照片")
+        gr.Markdown(i18n("upload_section"))
         with gr.Row():
             upload_files = gr.File(
-                label="选择照片（支持多张）",
+                label=i18n("upload_label"),
                 file_count="multiple",
                 file_types=["image"],
                 type="filepath",
             )
             original_gallery = gr.Gallery(
-                label="原图", columns=4, height="auto", object_fit="contain",
+                label=i18n("original_gallery_label"), columns=4, height="auto", object_fit="contain",
             )
 
         # ── 各步骤 UI ──
-        rotate_components = create_rotate_ui()
-        crop_components = create_crop_ui()
-        desaturate_components = create_desaturate_ui()
-        invert_components = create_invert_ui()
+        rotate_components = create_rotate_ui(i18n)
+        crop_components = create_crop_ui(i18n)
+        desaturate_components = create_desaturate_ui(i18n)
+        invert_components = create_invert_ui(i18n)
 
         # ── 批量操作 ──
-        gr.Markdown("### ⚡ 批量操作")
+        gr.Markdown(i18n("batch_section"))
         with gr.Row():
-            process_all_btn = gr.Button("⚡ 一键完成全部步骤", variant="primary")
-            download_btn = gr.Button("📦 下载全部结果（ZIP）", variant="secondary")
+            process_all_btn = gr.Button(i18n("process_all_btn"), variant="primary")
+            download_btn = gr.Button(i18n("download_btn"), variant="secondary")
         with gr.Row():
-            download_file = gr.File(label="下载 ZIP 文件")
-            process_all_status = gr.Textbox(label="批量操作状态", interactive=False)
+            download_file = gr.File(label=i18n("download_file_label"))
+            process_all_status = gr.Textbox(label=i18n("batch_status_label"), interactive=False)
 
         # ── 事件绑定 ──
-
-        # 跨步骤回调（定义在这里，因为它们涉及多个步骤的组件）
-        # 所有回调通过闭包捕获 state
 
         # ── 上传事件 ──
         def on_upload(files):
@@ -88,7 +81,7 @@ def create_app():
                     None,
                     0, 0.0,
                     0, 0, 0, 0,
-                    "请上传图片",
+                    i18n("msg_upload_first"),
                 )
 
             state.reset()
@@ -106,7 +99,7 @@ def create_app():
                     None,
                     0, 0.0,
                     0, 0, 0, 0,
-                    "所有图片加载失败，请检查文件",
+                    i18n("msg_all_images_failed"),
                 )
 
             # 初始化旋转参数
@@ -123,7 +116,7 @@ def create_app():
                 }
 
             # Gallery 显示原图
-            gallery_images = [(img, f"原图 #{i+1}") for i, img in enumerate(state.original_images)]
+            gallery_images = [(img, "#" + str(i+1)) for i, img in enumerate(state.original_images)]
 
             # 显示第一张图的裁切预览
             state.selected_index = 0
@@ -138,7 +131,7 @@ def create_app():
                 first_preview,
                 0, 0.0,
                 0, 0, 0, 0,
-                f"已上传 {len(state.original_images)} 张图片",
+                i18n("msg_uploaded"),
             )
 
         upload_files.upload(
@@ -209,16 +202,16 @@ def create_app():
         )
 
         # ── 各步骤事件绑定 ──
-        bind_rotate_events(rotate_components, state, other_components={"crop_preview": crop_components["crop_preview"]})
-        bind_crop_events(crop_components, state)
-        bind_desaturate_events(desaturate_components, state)
-        bind_invert_events(invert_components, state)
+        bind_rotate_events(rotate_components, state, i18n)
+        bind_crop_events(crop_components, state, i18n)
+        bind_desaturate_events(desaturate_components, state, i18n)
+        bind_invert_events(invert_components, state, i18n)
 
         # ── 一键处理事件 ──
         def on_process_all():
             """一键完成全部步骤：使用当前旋转参数 → 自动裁切 → 去色 → 反转。"""
             if not state.original_images:
-                return [], [], [], [], None, "请先上传图片"
+                return [], [], [], [], None, i18n("msg_upload_first")
 
             # 保留旋转参数，清空下游步骤缓存
             state.cropped_images = []
@@ -235,13 +228,13 @@ def create_app():
                 total_angle = state.get_total_rotation(i)
                 rotated = rotate_image(img, total_angle) if total_angle != 0 else img
                 state.rotated_images[i] = rotated
-                rotated_gallery.append((rotated, f"旋转后 #{i+1}"))
+                rotated_gallery.append((rotated, "#" + str(i+1)))
 
                 # 对旋转后图片检测裁切边界（正确处理扩展画布）
                 boundaries = detect_crop_on_rotated(rotated, img)
                 cropped = apply_crop_with_offsets(rotated, boundaries, {"top": 0, "bottom": 0, "left": 0, "right": 0})
                 state.cropped_images.append(cropped)
-                cropped_gallery.append((cropped, f"裁切后 #{i+1}"))
+                cropped_gallery.append((cropped, "#" + str(i+1)))
 
                 # 更新裁切参数
                 state.crop_params[i] = {
@@ -254,11 +247,11 @@ def create_app():
                 inverted_img = invert(desaturated_img)
                 state.desaturated_images.append(desaturated_img)
                 state.inverted_images.append(inverted_img)
-                desaturated_gallery.append((desaturated_img, f"去色后 #{i+1}"))
-                inverted_gallery.append((inverted_img, f"正片 #{i+1}"))
+                desaturated_gallery.append((desaturated_img, "#" + str(i+1)))
+                inverted_gallery.append((inverted_img, "#" + str(i+1)))
 
             preview = state.inverted_images[state.selected_index]
-            return rotated_gallery, cropped_gallery, desaturated_gallery, inverted_gallery, preview, "一键处理完成！所有步骤已自动执行"
+            return rotated_gallery, cropped_gallery, desaturated_gallery, inverted_gallery, preview, i18n("msg_batch_complete")
 
         process_all_btn.click(
             fn=on_process_all,
@@ -276,7 +269,7 @@ def create_app():
         def on_download_all():
             """将所有最终正片打包为 ZIP 文件供下载。"""
             if not state.inverted_images:
-                return None, "没有可下载的结果，请先完成处理"
+                return None, i18n("msg_no_download")
 
             tmpdir = tempfile.mkdtemp()
             zip_path = os.path.join(tmpdir, "film_negatives_processed.zip")
@@ -288,17 +281,19 @@ def create_app():
                     img.save(img_path, "JPEG", quality=95)
                     zf.write(img_path, filename)
 
-            return zip_path, f"已打包 {len(state.inverted_images)} 张正片为 ZIP 文件"
+            return zip_path, i18n("msg_downloaded")
 
         download_btn.click(
             fn=on_download_all,
             outputs=[download_file, process_all_status],
         )
 
+    # 将 i18n 附加到 demo 对象上，方便 launch 时使用
+    demo.i18n = i18n
     return demo
 
 
 # ── 启动 ──
 if __name__ == "__main__":
     demo = create_app()
-    demo.launch(server_name="127.0.0.1", server_port=7860, theme=gr.themes.Soft())
+    demo.launch(server_name="127.0.0.1", server_port=7860, i18n=demo.i18n, theme=gr.themes.Soft())

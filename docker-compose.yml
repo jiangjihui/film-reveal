@@ -1,0 +1,7 @@
+services:
+  film-reveal:
+    build: .
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./output:/app/output

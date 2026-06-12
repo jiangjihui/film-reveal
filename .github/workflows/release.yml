@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt pyinstaller
       - name: Build exe
-        run: pyinstaller --onefile --name FilmReveal run.py
+        run: pyinstaller --onefile --name FilmReveal --collect-all gradio --collect-all gradio_client --collect-all gradio_imageslider --collect-all safehttpx run.py
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:

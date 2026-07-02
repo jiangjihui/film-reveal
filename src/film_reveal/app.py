@@ -20,7 +20,6 @@ from film_reveal.processing import (
     apply_crop_with_offsets,
     desaturate,
     invert,
-    detect_crop_on_rotated,
 )
 from film_reveal.steps import (
     create_rotate_ui, bind_rotate_events,
@@ -230,17 +229,13 @@ def create_app():
                 state.rotated_images[i] = rotated
                 rotated_gallery.append((rotated, "#" + str(i+1)))
 
-                # 对旋转后图片检测裁切边界（正确处理扩展画布）
-                boundaries = detect_crop_on_rotated(rotated, img)
-                cropped = apply_crop_with_offsets(rotated, boundaries, {"top": 0, "bottom": 0, "left": 0, "right": 0})
+                # 使用用户已微调的裁切参数（与预览中显示的完全一致）
+                crop_params = state.crop_params[i]
+                boundaries = crop_params["base_boundaries"]
+                offsets = crop_params["offsets"]
+                cropped = apply_crop_with_offsets(rotated, boundaries, offsets)
                 state.cropped_images.append(cropped)
                 cropped_gallery.append((cropped, "#" + str(i+1)))
-
-                # 更新裁切参数
-                state.crop_params[i] = {
-                    "base_boundaries": boundaries,
-                    "offsets": {"top": 0, "bottom": 0, "left": 0, "right": 0},
-                }
 
                 # 去色 + 反转
                 desaturated_img = desaturate(cropped)

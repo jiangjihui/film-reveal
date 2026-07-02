@@ -29,6 +29,17 @@ from film_reveal.steps import (
 )
 
 
+# ── 自定义 CSS ──
+# 限制页面最大宽度，参考 GitHub 的 container-xl 布局（1280px），
+# 避免 PC 宽屏下图片预览铺满全屏导致竖向图片无法一屏显示完整。
+CUSTOM_CSS = """
+.gradio-container {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+"""
+
+
 def create_app():
     """创建 Gradio 应用，组装所有步骤和事件。"""
 
@@ -283,8 +294,9 @@ def create_app():
             outputs=[download_file, process_all_status],
         )
 
-    # 将 i18n 附加到 demo 对象上，方便 launch 时使用
+    # 将 i18n 和自定义 CSS 附加到 demo 对象上，方便 launch 时使用
     demo.i18n = i18n
+    demo.custom_css = CUSTOM_CSS
     return demo
 
 

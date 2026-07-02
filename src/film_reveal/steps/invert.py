@@ -60,6 +60,7 @@ def bind_invert_events(components: dict, state: AppState, i18n):
             process_fn=invert,
             target_list_name="inverted_images",
             clear_downstream_from="inverted",
+            thumbnail_size=1000,
         )
 
         preview = results[state.selected_index]

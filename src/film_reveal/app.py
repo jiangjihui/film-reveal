@@ -27,6 +27,7 @@ from film_reveal.steps import (
     create_desaturate_ui, bind_desaturate_events,
     create_invert_ui, bind_invert_events,
 )
+from film_reveal.steps.common import make_thumbnail
 
 
 # ── 自定义 CSS ──
@@ -125,8 +126,8 @@ def create_app():
                     "offsets": {"top": 0, "bottom": 0, "left": 0, "right": 0},
                 }
 
-            # Gallery 显示原图
-            gallery_images = [(img, "#" + str(i+1)) for i, img in enumerate(state.original_images)]
+            # Gallery 显示原图（使用缩略图提升性能）
+            gallery_images = [(make_thumbnail(img), "#" + str(i+1)) for i, img in enumerate(state.original_images)]
 
             # 显示第一张图的裁切预览
             state.selected_index = 0
@@ -137,7 +138,7 @@ def create_app():
             )
 
             return (
-                gallery_images, [], [], [], [],
+                gallery_images, [], [], [],
                 first_preview,
                 0, 0.0,
                 0, 0, 0, 0,
@@ -151,7 +152,6 @@ def create_app():
                 original_gallery,
                 rotate_components["rotated_gallery"],
                 crop_components["cropped_gallery"],
-                desaturate_components["desaturated_gallery"],
                 invert_components["inverted_gallery"],
                 crop_components["crop_preview"],
                 rotate_components["rotation_base_display"],
@@ -221,7 +221,7 @@ def create_app():
         def on_process_all():
             """一键完成全部步骤：使用当前旋转参数 → 自动裁切 → 去色 → 反转。"""
             if not state.original_images:
-                return [], [], [], [], None, i18n("msg_upload_first")
+                return [], [], [], None, i18n("msg_upload_first")
 
             # 保留旋转参数，清空下游步骤缓存
             state.cropped_images = []
@@ -230,7 +230,6 @@ def create_app():
 
             rotated_gallery = []
             cropped_gallery = []
-            desaturated_gallery = []
             inverted_gallery = []
 
             for i, img in enumerate(state.original_images):
@@ -238,7 +237,7 @@ def create_app():
                 total_angle = state.get_total_rotation(i)
                 rotated = rotate_image(img, total_angle) if total_angle != 0 else img
                 state.rotated_images[i] = rotated
-                rotated_gallery.append((rotated, "#" + str(i+1)))
+                rotated_gallery.append((make_thumbnail(rotated), "#" + str(i+1)))
 
                 # 使用用户已微调的裁切参数（与预览中显示的完全一致）
                 crop_params = state.crop_params[i]
@@ -246,25 +245,23 @@ def create_app():
                 offsets = crop_params["offsets"]
                 cropped = apply_crop_with_offsets(rotated, boundaries, offsets)
                 state.cropped_images.append(cropped)
-                cropped_gallery.append((cropped, "#" + str(i+1)))
+                cropped_gallery.append((make_thumbnail(cropped), "#" + str(i+1)))
 
                 # 去色 + 反转
                 desaturated_img = desaturate(cropped)
                 inverted_img = invert(desaturated_img)
                 state.desaturated_images.append(desaturated_img)
                 state.inverted_images.append(inverted_img)
-                desaturated_gallery.append((desaturated_img, "#" + str(i+1)))
-                inverted_gallery.append((inverted_img, "#" + str(i+1)))
+                inverted_gallery.append((make_thumbnail(inverted_img, 1000), "#" + str(i+1)))
 
             preview = state.inverted_images[state.selected_index]
-            return rotated_gallery, cropped_gallery, desaturated_gallery, inverted_gallery, preview, i18n("msg_batch_complete")
+            return rotated_gallery, cropped_gallery, inverted_gallery, preview, i18n("msg_batch_complete")
 
         process_all_btn.click(
             fn=on_process_all,
             outputs=[
                 rotate_components["rotated_gallery"],
                 crop_components["cropped_gallery"],
-                desaturate_components["desaturated_gallery"],
                 invert_components["inverted_gallery"],
                 invert_components["invert_preview"],
                 process_all_status,

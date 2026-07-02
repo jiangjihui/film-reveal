@@ -25,6 +25,8 @@ def auto_detect_tilt_angle(img: Image.Image) -> float:
     旋转方向约定：PIL rotate(angle) 正值 = 逆时针。
     如果片基上边界右侧行号更大（图片右端偏下/右倾），需逆时针矫正 → 正角度。
 
+    性能优化：先在缩小后的图片上检测，角度与缩放无关。
+
     Args:
         img: PIL Image，翻拍的胶卷负片照片
 
@@ -32,9 +34,21 @@ def auto_detect_tilt_angle(img: Image.Image) -> float:
         float: 建议的旋转角度（度），正值逆时针矫正
                如果检测不到明显倾斜，返回 0.0
     """
-    boundaries = auto_detect_crop_boundaries(img)
+    # 缩小图片以加速检测，最大边 1000px
+    max_side = 1000
+    orig_w, orig_h = img.size
+    largest_side = max(orig_w, orig_h)
+    if largest_side > max_side:
+        scale = max_side / largest_side
+        small_w = int(orig_w * scale)
+        small_h = int(orig_h * scale)
+        small_img = img.resize((small_w, small_h), Image.LANCZOS)
+    else:
+        small_img = img
 
-    width, height = img.size
+    boundaries = auto_detect_crop_boundaries(small_img)
+
+    width, height = small_img.size
     top, bottom = boundaries["top"], boundaries["bottom"]
     left, right = boundaries["left"], boundaries["right"]
 
@@ -46,7 +60,7 @@ def auto_detect_tilt_angle(img: Image.Image) -> float:
     if not (has_top_base or has_bottom_base or has_left_base or has_right_base):
         return 0.0
 
-    gray = img.convert("L")
+    gray = small_img.convert("L")
     arr = np.array(gray, dtype=float)
 
     NUM_STRIPS = 6
@@ -174,9 +188,10 @@ def auto_detect_crop_boundaries(img: Image.Image) -> dict:
     与实际图像内容的暗区有明显的亮度差异。
 
     检测策略：
-    1. 转灰度，计算每行/列的平均亮度曲线
-    2. 对亮度曲线取一阶差分（梯度），找到亮度骤降的转折点
-    3. 从四个边缘向内扫描，找梯度绝对值最大的点作为裁切边界
+    1. 先将图片缩小到最大边 1000px，加速计算（坐标最后映射回原图）
+    2. 转灰度，计算每行/列的平均亮度曲线
+    3. 对亮度曲线取一阶差分（梯度），找到亮度骤降的转折点
+    4. 从四个边缘向内扫描，找梯度绝对值最大的点作为裁切边界
 
     这种梯度法比阈值法更鲁棒：不依赖固定阈值，而是找亮度变化最剧烈的位置，
     即使片基区域不特别亮、图像内容不特别暗也能正确检测。
@@ -188,7 +203,20 @@ def auto_detect_crop_boundaries(img: Image.Image) -> dict:
         dict: {"top": int, "bottom": int, "left": int, "right": int}
               值为像素坐标，可直接用于 PIL Image.crop()
     """
-    gray = img.convert("L")
+    # 缩小图片以加速检测，最大边 1000px
+    max_side = 1000
+    orig_w, orig_h = img.size
+    largest_side = max(orig_w, orig_h)
+    if largest_side > max_side:
+        scale = max_side / largest_side
+        small_w = int(orig_w * scale)
+        small_h = int(orig_h * scale)
+        small_img = img.resize((small_w, small_h), Image.LANCZOS)
+    else:
+        scale = 1.0
+        small_img = img
+
+    gray = small_img.convert("L")
     arr = np.array(gray)
     height, width = arr.shape
 
@@ -230,9 +258,16 @@ def auto_detect_crop_boundaries(img: Image.Image) -> dict:
     crop_area = (right - left) * (bottom - top)
     total_area = width * height
     if crop_area < total_area * 0.1:
-        return {"top": 0, "bottom": height, "left": 0, "right": width}
+        return {"top": 0, "bottom": orig_h, "left": 0, "right": orig_w}
 
-    return {"top": top, "bottom": bottom, "left": left, "right": right}
+    # 将坐标映射回原图尺寸
+    inv_scale = 1.0 / scale
+    return {
+        "top": int(top * inv_scale),
+        "bottom": int(bottom * inv_scale),
+        "left": int(left * inv_scale),
+        "right": int(right * inv_scale),
+    }
 
 
 def detect_crop_on_rotated(img: Image.Image, original_img: Image.Image) -> dict:

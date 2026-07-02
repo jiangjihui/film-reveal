@@ -32,10 +32,6 @@ def create_desaturate_ui(i18n) -> dict:
         with gr.Column(scale=2):
             components["desaturate_preview"] = gr.Image(label=i18n("desaturate_preview_label"), type="pil")
 
-    components["desaturated_gallery"] = gr.Gallery(
-        label=i18n("desaturated_gallery_label"), columns=4, height="auto", object_fit="contain",
-    )
-
     return components
 
 
@@ -52,9 +48,9 @@ def bind_desaturate_events(components: dict, state: AppState, i18n):
     def on_desaturate():
         """对所有裁切后图片执行去色处理。"""
         if not state.cropped_images:
-            return [], None, i18n("msg_desaturate_first")
+            return None, i18n("msg_desaturate_first")
 
-        results, gallery_tuples = batch_process(
+        results, _ = batch_process(
             state,
             source_list_name="cropped_images",
             process_fn=desaturate,
@@ -63,9 +59,9 @@ def bind_desaturate_events(components: dict, state: AppState, i18n):
         )
 
         preview = results[state.selected_index]
-        return gallery_tuples, preview, i18n("msg_desaturate_complete")
+        return preview, i18n("msg_desaturate_complete")
 
     components["desaturate_btn"].click(
         fn=on_desaturate,
-        outputs=[components["desaturated_gallery"], components["desaturate_preview"], components["desaturate_status"]],
+        outputs=[components["desaturate_preview"], components["desaturate_status"]],
     )

@@ -10,6 +10,7 @@ import gradio as gr
 from film_reveal.state import AppState
 from film_reveal.processing.core import rotate_image
 from film_reveal.processing.detection import auto_detect_tilt_angle
+from film_reveal.steps.common import make_thumbnail
 
 
 # ── UI 创建 ────────────────────────────────────────────────────────────
@@ -156,7 +157,7 @@ def bind_rotate_events(components: dict, state: AppState, i18n):
             total_angle = state.get_total_rotation(i)
             rotated = rotate_image(img, total_angle) if total_angle != 0 else img
             state.rotated_images[i] = rotated
-            rotated_gallery.append((rotated, "#" + str(i+1)))
+            rotated_gallery.append((make_thumbnail(rotated), "#" + str(i+1)))
 
         state.clear_downstream("rotated")
 

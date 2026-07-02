@@ -10,6 +10,7 @@ import gradio as gr
 from film_reveal.state import AppState
 from film_reveal.processing.core import apply_crop_with_offsets, draw_crop_overlay
 from film_reveal.processing.detection import auto_detect_crop_boundaries, detect_crop_on_rotated
+from film_reveal.steps.common import make_thumbnail
 
 
 # ── UI 创建 ────────────────────────────────────────────────────────────
@@ -153,7 +154,7 @@ def bind_crop_events(components: dict, state: AppState, i18n):
                 working_img, params["base_boundaries"], params["offsets"]
             )
             state.cropped_images.append(cropped)
-            cropped_gallery.append((cropped, "#" + str(i+1)))
+            cropped_gallery.append((make_thumbnail(cropped), "#" + str(i+1)))
 
         state.clear_downstream("cropped")
 

@@ -29,6 +29,7 @@ def create_crop_ui(i18n) -> dict:
     with gr.Row():
         with gr.Column(scale=1):
             components["auto_crop_btn"] = gr.Button(i18n("auto_crop_btn"), variant="secondary")
+            components["no_crop_btn"] = gr.Button(i18n("no_crop_btn"), variant="secondary")
             components["apply_crop_btn"] = gr.Button(i18n("apply_crop_btn"), variant="primary")
             components["crop_status"] = gr.Textbox(label=i18n("crop_status_label"), interactive=False)
         with gr.Column(scale=2):
@@ -135,6 +136,34 @@ def bind_crop_events(components: dict, state: AppState, i18n):
 
     components["auto_crop_btn"].click(
         fn=on_auto_crop,
+        outputs=[components["crop_preview"], top_slider, bottom_slider, left_slider, right_slider, components["crop_status"]],
+    )
+
+    # ── 不裁切 ──
+    def on_no_crop():
+        """对所有图片设置不裁切（保留完整图片）。"""
+        if not state.original_images:
+            return None, 0, 0, 0, 0, i18n("msg_upload_first")
+
+        for i in range(len(state.original_images)):
+            working_img = state.get_working_image(i)
+            width, height = working_img.size
+            state.crop_params[i] = {
+                "base_boundaries": {"top": 0, "bottom": height, "left": 0, "right": width},
+                "offsets": {"top": 0, "bottom": 0, "left": 0, "right": 0},
+            }
+
+        idx = state.selected_index
+        working_img = state.get_working_image(idx)
+        preview = draw_crop_overlay(
+            working_img,
+            state.crop_params[idx]["base_boundaries"],
+            state.crop_params[idx]["offsets"],
+        )
+        return preview, 0, 0, 0, 0, i18n("msg_no_crop")
+
+    components["no_crop_btn"].click(
+        fn=on_no_crop,
         outputs=[components["crop_preview"], top_slider, bottom_slider, left_slider, right_slider, components["crop_status"]],
     )
 
